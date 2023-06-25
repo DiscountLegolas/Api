@@ -35,6 +35,18 @@ namespace Application.Controllers
             return BadRequest("Model Yanlıştır.");
         }
         [Authorize]
+        [HttpPut]
+        [Route("Update/{id}")]
+        public async Task<ActionResult> CardUpdate([FromRoute] int id,[FromBody] CardCreateUpdate model)
+        {
+            if (ModelState.IsValid)
+            {
+                var a = await _repo.UpdateCard(id,model);
+                return Ok(mapper.Map<Card, CardModel>(a));
+            }
+            return BadRequest("Model Yanlıştır.");
+        }
+        [Authorize]
         [HttpPost]
         [Route("AddAssingment")]
         public async Task<ActionResult> CardAddAssingment([FromBody] CardAddRemoveAssingment model)
@@ -54,18 +66,6 @@ namespace Application.Controllers
             if (ModelState.IsValid)
             {
                 var a = _repo.RemoveAssingment(model.CardId, model.UserId);
-                return Ok(mapper.Map<Card, CardModel>(a));
-            }
-            return BadRequest("Model Yanlıştır.");
-        }
-        [Authorize]
-        [HttpPost]
-        [Route("UpdateDescription")]
-        public async Task<ActionResult> CardUpdateDescription([FromBody]  CardCreateUpdate model)
-        {
-            if (ModelState.IsValid)
-            {
-                var a = _repo.UpdateDescription(model.CardId,model.Description);
                 return Ok(mapper.Map<Card, CardModel>(a));
             }
             return BadRequest("Model Yanlıştır.");

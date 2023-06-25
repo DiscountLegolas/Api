@@ -10,7 +10,7 @@ namespace Application.ServiceModel.Repos
     public interface ICardRepo
     {
         public Card CreateCard(CardCreateUpdate card);
-        public Card UpdateDescription(int id,string description);
+        public Task<Card> UpdateCard(int id, CardCreateUpdate card);
         public Card AddAssingment(int id, string userıd);
         public Card RemoveAssingment(int id, string userıd);
     }
@@ -41,7 +41,8 @@ namespace Application.ServiceModel.Repos
 
         public Card CreateCard(CardCreateUpdate card)
         {
-            Card cardcreate=new Card() { Title=card.Title,CardList=_dbcontext.CardLists.First(x=>x.Id==card.CardListId)};
+            var cardlist = _dbcontext.CardLists.First(x => x.Id == card.CardListId);
+            Card cardcreate=new Card() { Title=card.Title,CardList=cardlist,Desc=card.Description,Index=cardlist.Cards.Count};
             _dbcontext.Cards.Add(cardcreate);
             _dbcontext.SaveChanges ();
             return cardcreate;
@@ -56,12 +57,23 @@ namespace Application.ServiceModel.Repos
             return card;
         }
 
-        public Card UpdateDescription(int id, string description)
+        public async Task<Card> UpdateCard(int id,CardCreateUpdate cardmodel)
         {
             Card card = _dbcontext.Cards.First(X => X.Id == id);
-            card.Desc = description;
-            _dbcontext.SaveChanges ();
+            card.CardList=_dbcontext.CardLists.First(x=>x.Id==cardmodel.CardListId);
+            if (cardmodel.Description!=null)
+            {
+                card.Desc = cardmodel.Description;
+            }
+            if (cardmodel.Title != null)
+            {
+                card.Title = cardmodel.Title;
+            }
+            card.Index = (int)cardmodel.Index;
+            Console.WriteLine("afaf");
+            await _dbcontext.SaveChangesAsync();
             return card;
+
         }
     }
 }

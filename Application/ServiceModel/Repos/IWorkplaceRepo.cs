@@ -7,6 +7,7 @@ namespace Application.ServiceModel.Repos
 {
     public interface IWorkplaceRepo
     {
+        public Task DeleteWorkplace(int workplaceıd);
         public ICollection<Workplace> GetUserWorkplaces(string userId);
         public Workplace CreateWorkplace(string userId,WorkplaceCreateModel model);
 
@@ -28,9 +29,15 @@ namespace Application.ServiceModel.Repos
             return workplace;
         }
 
+        public async Task DeleteWorkplace(int workplaceıd)
+        {
+            _dbcontext.Workplaces.Remove(await _dbcontext.Workplaces.FirstAsync(x => x.WorkplaceId==workplaceıd));
+            await _dbcontext.SaveChangesAsync();
+        }
+
         public ICollection<Workplace> GetUserWorkplaces(string userId)
         {
-            return _dbcontext.Workplaces.Where(x=>x.Members.Count(a=>a.User.Id==userId) >=0).ToList();
+            return _dbcontext.Workplaces.Where(x=>x.Members.Count(a=>a.User.Id==userId) >0).ToList();
         }
     }
 }

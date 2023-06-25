@@ -34,7 +34,8 @@ namespace Application.Controllers
             Console.WriteLine(userıd);
             var b = workplaceRepo.GetUserWorkplaces(userıd);
             List<WorkPlaceSimpleModel> WorkPlaces = _mapper.Map<ICollection<Workplace>,List<WorkPlaceSimpleModel>>(b);
-            return Ok(WorkPlaces);
+            WorkPlacesModel workPlaces = new WorkPlacesModel() { WorkPlaces= WorkPlaces };
+            return Ok(workPlaces);
         }
 
         [Authorize]
@@ -51,6 +52,14 @@ namespace Application.Controllers
                 return Ok(b);
             }
             return BadRequest("Model Yanlıştır.");
+        }
+        [Authorize]
+        [Route("Delete/{workplaceıd}")]
+        [HttpDelete]
+        public async Task<ActionResult> WorkspaceDelete([FromRoute] int workplaceıd)
+        {
+            await workplaceRepo.DeleteWorkplace(workplaceıd);
+            return Ok();
         }
     }
 }

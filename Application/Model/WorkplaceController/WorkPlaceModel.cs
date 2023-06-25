@@ -21,4 +21,8 @@ namespace Application.Model.WorkplaceController
         public List<BoardSimpleModel> Boards { get; set; }
         public List<WorkplaceMemberModel> Members { get; set; }
     }
+    public class WorkPlacesModel
+    {
+        public List<WorkPlaceSimpleModel> WorkPlaces { get; set; }
+    }
 }

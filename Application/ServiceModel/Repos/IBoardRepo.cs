@@ -2,13 +2,15 @@
 using Application.Model.WorkplaceController;
 using Data.EFCore;
 using Data.EFCore.Classes;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.ServiceModel.Repos
 {
     public interface IBoardRepo
     {
-        public Board GetBoard(Guid id);
-        public Board CreateBoard(BoardCreateModel model);
+        public Task DeleteBoard(Guid boardıd);
+        public Task<Board> GetBoard(Guid id);
+        public Task<Board> CreateBoard(BoardCreateModel model);
     }
     public class BoardRepo : IBoardRepo
     {
@@ -17,17 +19,23 @@ namespace Application.ServiceModel.Repos
         {
             _dbcontext = dbContext;
         }
-        public Board CreateBoard(BoardCreateModel model)
+        public async Task<Board> CreateBoard(BoardCreateModel model)
         {
             Board board = new Board() { Title = model.Title, Workplace = _dbcontext.Workplaces.First(x=>x.WorkplaceId== model.WorkPlaceId)};
             _dbcontext.Boards.Add(board);
-            _dbcontext.SaveChanges();
-            return board;
+            await _dbcontext.SaveChangesAsync();
+            return  board;
         }
 
-        public Board GetBoard(Guid id)
+        public async Task DeleteBoard(Guid boardıd)
         {
-            return _dbcontext.Boards.FirstOrDefault(x=>x.Id==id);
+            _dbcontext.Boards.Remove(await _dbcontext.Boards.FirstAsync(x => x.Id == boardıd));
+            await _dbcontext.SaveChangesAsync();
+        }
+
+        public async Task<Board> GetBoard(Guid id)
+        {
+            return await _dbcontext.Boards.FirstOrDefaultAsync(x=>x.Id==id);
         }
     }
 }

@@ -8,8 +8,8 @@ namespace Application.Model.AccountController
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage ="Kullanıcı adı zorunludur.")]
-        public string UserName { get; set; }
+        [Required(ErrorMessage ="E-Mail adı zorunludur.")]
+        public string EMail { get; set; }
 
         [Required(ErrorMessage ="Şifre zorunludur.")]
         public string Password { get; set; }

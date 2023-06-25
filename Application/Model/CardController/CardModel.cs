@@ -7,6 +7,7 @@ namespace Application.Model.CardController
         public int Id { get; set; }
         public string Title { get; set; }
         public string Desc { get; set; }
+        public int Index { get; set; }
         public List<AccountSimpleModel> AssingedUsers { get; set; }
     }
 }

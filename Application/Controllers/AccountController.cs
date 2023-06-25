@@ -71,7 +71,7 @@ namespace Application.Controllers
         {
             if (ModelState.IsValid)
             {
-                ApplicationUser user = await _userManager.FindByNameAsync(model.UserName.Trim());
+                ApplicationUser user = await _userManager.FindByEmailAsync(model.EMail.Trim());
                 if (user!=null && await _userManager.CheckPasswordAsync(user,model.Password.Trim()))
                 {
                     var claims = new[]
@@ -85,7 +85,7 @@ namespace Application.Controllers
                     var token = new JwtSecurityToken(
                         issuer:"http://google.com",
                         audience:"http://google.com",
-                        expires:DateTime.UtcNow.AddHours(1),
+                        expires:DateTime.UtcNow.AddDays(1),
                         claims:claims,
                         signingCredentials:new SigningCredentials(signinKey,SecurityAlgorithms.HmacSha256)
                         );
