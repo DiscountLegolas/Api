@@ -7,8 +7,8 @@ namespace Application.ServiceModel.Repos
 {
     public interface ICommentRepo
     {
-        public Card AddComment(CommentAdd Create);
-        public Card UpdateComment(CommentUpdate update,int id);
+        public Comment AddComment(CommentAdd Create,string userid);
+        public Comment UpdateComment(CommentUpdate update,int id);
         public Card DeleteComment(int id);
 
 
@@ -20,12 +20,12 @@ namespace Application.ServiceModel.Repos
         {
             _dbcontext = dbContext;
         }
-        public Card AddComment(CommentAdd Create)
+        public Comment AddComment(CommentAdd Create, string userid)
         {
-            Comment comment = new Comment() { Text = Create.Text, Card = _dbcontext.Cards.First(x => x.Id == Create.CardId), User = _dbcontext.Users.First(x => x.Id == Create.UserId) };
+            Comment comment = new Comment() { Text = Create.Text, Card = _dbcontext.Cards.First(x => x.Id == Create.CardId), User = _dbcontext.Users.First(x => x.Id == userid) };
             _dbcontext.Comments.Add(comment);
             _dbcontext.SaveChanges();
-            return _dbcontext.Cards.First(x => x.Id == Create.CardId);
+            return comment;
         }
 
         public Card DeleteComment(int id)
@@ -37,12 +37,12 @@ namespace Application.ServiceModel.Repos
             return a;
         }
 
-        public Card UpdateComment(CommentUpdate update, int id)
+        public Comment UpdateComment(CommentUpdate update, int id)
         {
             Comment comment = _dbcontext.Comments.First(x => x.Id == id);
             comment.Text = update.Text;
             _dbcontext.SaveChanges();
-            return comment.Card;
+            return comment;
         }
     }
 }

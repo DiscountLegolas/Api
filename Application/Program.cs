@@ -21,23 +21,39 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Application.ServiceModel.Repos;
+using System.Threading.RateLimiting;
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var trelloorigins = "_trelloorigins";
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
+    options.AddPolicy(name: trelloorigins,
                       policy =>
                       {
-                          policy.WithOrigins("*");
-                          policy.WithHeaders("*");
-                          policy.WithMethods("*");
+                          policy.AllowAnyOrigin();
+                          policy.AllowAnyHeader();
+                          policy.AllowAnyMethod();
                       });
 });
 // Add services to the container.
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-); ;
+);
+//Throttling
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 10,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+    options.RejectionStatusCode = 429;
+});
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDbContext<ApplicationIdentityDbContext>
     (options => options.UseLazyLoadingProxies().UseNpgsql(ConfigurationExtensions.GetConnectionString(configuration:builder.Configuration,name:"DefaultConnection")));
@@ -54,11 +70,14 @@ builder.Services.AddIdentityCore<ApplicationUser>(options=>{
                 options.Lockout.AllowedForNewUsers = false;
                 options.SignIn.RequireConfirmedEmail = false;
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            }).AddRoles<ApplicationRole>()
+            }).AddRoles<ApplicationRole>().AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationIdentityDbContext>()
                 .AddDefaultTokenProviders();
+
 var services=builder.Services;
-          services.ConfigureApplicationCookie(options =>
+services.Configure<DataProtectionTokenProviderOptions>(opt =>
+   opt.TokenLifespan = TimeSpan.FromHours(2));
+services.ConfigureApplicationCookie(options =>
             {
                 options.Cookie.Name = "member_cookie";
                 options.Cookie.HttpOnly = true;
@@ -107,7 +126,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors(trelloorigins);
 
 app.MapControllers();
 

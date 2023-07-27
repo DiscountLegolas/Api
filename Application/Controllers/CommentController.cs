@@ -6,6 +6,7 @@ using Data.EFCore.Classes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Application.Controllers
 {
@@ -23,19 +24,19 @@ namespace Application.Controllers
         [Authorize]
         [HttpPost]
         [Route("Create")]
-        public async Task<ActionResult> CardAddComment([FromBody] CommentAdd model)
+        public async Task<ActionResult> AddComment([FromBody] CommentAdd model)
         {
             if (ModelState.IsValid)
             {
-                var a = _repo.AddComment(model);
-                return Ok(mapper.Map<Card, CardModel>(a));
+                var a = _repo.AddComment(model, User.Claims?.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value);
+                return Ok(mapper.Map<Comment, CommentModel>(a));
             }
             return BadRequest("Model Yanlıştır.");
         }
         [Authorize]
         [HttpDelete]
         [Route("Delete/{id}")]
-        public async Task<ActionResult> CardDelete([FromRoute] int id)
+        public async Task<ActionResult> CommentDelete([FromRoute] int id)
         {
             if (ModelState.IsValid)
             {
@@ -47,12 +48,12 @@ namespace Application.Controllers
         [Authorize]
         [HttpPut]
         [Route("Update/{id}")]
-        public async Task<ActionResult> CardDelete([FromRoute] int id, [FromBody] CommentUpdate update)
+        public async Task<ActionResult> CommentUpdate([FromRoute] int id, [FromBody] CommentUpdate update)
         {
             if (ModelState.IsValid)
             {
                 var a = _repo.UpdateComment(update,id);
-                return Ok(mapper.Map<Card, CardModel>(a));
+                return Ok(mapper.Map<Comment, CommentModel>(a));
             }
             return BadRequest("Model Yanlıştır.");
         }

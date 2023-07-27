@@ -29,7 +29,7 @@ namespace Application.Controllers
         {
             if (ModelState.IsValid)
             {
-                var a = _repo.CreateCard(model);
+                var a = await _repo.CreateCard(model);
                 return Ok(mapper.Map<Card, CardModel>(a));
             }
             return BadRequest("Model Yanlıştır.");

@@ -27,10 +27,7 @@ namespace Application.Controllers
             if (ModelState.IsValid)
             {
                 var board=await boardRepo.GetBoard(id);
-                foreach (var item in board.Lists)
-                {
-                    item.Cards = item.Cards.OrderBy(x => x.Index).ToList();
-                }
+                board.Lists=board.Lists.OrderBy(x=>x.Index).ToList();
                 return Ok(_mapper.Map<Board,BoardModel>(board));
             }
             return BadRequest("Model Yanlıştır.");

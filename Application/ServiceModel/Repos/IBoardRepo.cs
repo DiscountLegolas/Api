@@ -21,7 +21,7 @@ namespace Application.ServiceModel.Repos
         }
         public async Task<Board> CreateBoard(BoardCreateModel model)
         {
-            Board board = new Board() { Title = model.Title, Workplace = _dbcontext.Workplaces.First(x=>x.WorkplaceId== model.WorkPlaceId)};
+            Board board = new Board() { Title = model.Title,PicUrl=model.PicUrl, Workplace = _dbcontext.Workplaces.First(x=>x.WorkplaceId== model.WorkPlaceId)};
             _dbcontext.Boards.Add(board);
             await _dbcontext.SaveChangesAsync();
             return  board;
@@ -35,7 +35,17 @@ namespace Application.ServiceModel.Repos
 
         public async Task<Board> GetBoard(Guid id)
         {
-            return await _dbcontext.Boards.FirstOrDefaultAsync(x=>x.Id==id);
+            try
+            {
+                var h = await _dbcontext.Boards.FirstOrDefaultAsync(x => x.Id == id);
+                Console.WriteLine(h);
+                return h;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
         }
     }
 }

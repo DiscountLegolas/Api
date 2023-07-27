@@ -1,6 +1,7 @@
 ﻿using Application.Model.MemberController;
 using Data.EFCore;
 using Data.EFCore.Classes;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.ServiceModel.Repos
 {
@@ -10,6 +11,7 @@ namespace Application.ServiceModel.Repos
         public Board RemoveBoardMember(BoardAddRemoveMember member);
         public Workplace AddWorkplaceMember(WorkplaceAddRemoveMember member);
         public Workplace RemoveWorkplaceMember(WorkplaceAddRemoveMember member);
+        public Task<List<ApplicationUser>> FilterMembers(string q);
     }
     public class MemberRepo : IMemberRepo
     {
@@ -42,6 +44,12 @@ namespace Application.ServiceModel.Repos
             _dbcontext.WorkplaceMembers.Add(workplaceMember);
             _dbcontext.SaveChanges();
             return workplace;
+        }
+
+        public async Task<List<ApplicationUser>> FilterMembers(string q)
+        {
+            List<ApplicationUser> users=await _dbcontext.Users.Where(x=>x.Email.ToLower().Contains(q.ToLower())).ToListAsync();
+            return users;
         }
 
         public Board RemoveBoardMember(BoardAddRemoveMember member)

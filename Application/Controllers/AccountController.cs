@@ -2,11 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Model.AccountController;
+using Castle.Core.Smtp;
 using Data.EFCore.Classes;
+using FluentEmail.Core;
+using IdentityServer4.Models;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -100,6 +107,65 @@ namespace Application.Controllers
                 }
             }
             return BadRequest("Veriler uygun değil");
+        }
+        [HttpPost]
+        [Route("Forgot")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Model İs Not Valid");
+            var user = await _userManager.FindByEmailAsync(forgotPasswordModel.Email);
+            if (user == null)
+                return BadRequest(BadRequest("Model İs Not Valid"));
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var callback = "http://localhost:3000/Reset?token=" + token + "&email=" + user.Email;
+            MailMessage message = new MailMessage();
+            SmtpClient smtp = new SmtpClient();
+            message.From = new MailAddress("aykutalpozgur@hotmail.com");
+            message.To.Add(new MailAddress(forgotPasswordModel.Email));
+            message.Subject = "Test";
+            string body = string.Format("<h2>Password Reset Request for Your Account</h2>" +
+                "<p>We recently received a request to reset your password for your account. If you did not request this, please disregard this email.</p>" +
+                "<p>To reset your password, click on the link below:</p>\r\n" +
+                "<p><a href=\"{0}\" style=\"background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">Reset Password</a></p>" +
+                "<p>This link will expire in 15 minutes for security reasons. If the link has expired, please request a new password reset.</p>" +
+                "<p>If you are having trouble with the link, you can copy and paste the following URL into your browser:</p>" +
+                "<p>{0}</p>", callback);
+            message.Body = body;
+            smtp.Port = 587;
+            message.IsBodyHtml = true;
+            smtp.Host = "smtp.office365.com";
+            smtp.EnableSsl = true;
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = new NetworkCredential("aykutalpozgur@hotmail.com", "Ozgur1998");
+            smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+            smtp.Send(message);
+            return Ok();
+        }
+        [HttpPost]
+        [Route("Reset")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Model İs Not Valid");
+
+            var user = await _userManager.FindByEmailAsync(resetPasswordModel.Email);
+            if (user == null)
+               return  BadRequest(BadRequest("Model İs Not Valid"));
+
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+            if (!resetPassResult.Succeeded)
+            {
+                foreach (var error in resetPassResult.Errors)
+                {
+                    ModelState.TryAddModelError(error.Code, error.Description);
+                }
+
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
         }
     }
 }

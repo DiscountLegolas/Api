@@ -13,6 +13,8 @@ namespace Data.EFCore.Classes
         public Guid Id {get;set;}
         [Required]
         public string Title {get;set;}
+        public string PicUrl { get; set; }
+
         public virtual Workplace Workplace { get;set;}
         public virtual ICollection<CardList> Lists {get;set;}
         public virtual ICollection<BoardMember> BoardMembers { get; set; }

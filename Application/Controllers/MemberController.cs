@@ -1,4 +1,5 @@
-﻿using Application.Model.BoardController;
+﻿using Application.Model.AccountController;
+using Application.Model.BoardController;
 using Application.Model.CardController;
 using Application.Model.CommentController;
 using Application.Model.MemberController;
@@ -94,6 +95,26 @@ namespace Application.Controllers
                 {
                     var a = _repo.RemoveWorkplaceMember(model);
                     return Ok(mapper.Map<Workplace, WorkPlaceModel>(a));
+                }
+                catch (Exception)
+                {
+                    return NotFound();
+                }
+
+            }
+            return BadRequest("Model Yanlıştır.");
+        }
+        [Authorize]
+        [HttpGet]
+        [Route("Filter/{q}")]
+        public async Task<ActionResult> FilterMembers([FromRoute] string q)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var a =await _repo.FilterMembers(q);
+                    return Ok(mapper.Map<List<ApplicationUser>, List<AccountSimpleModel>>(a));
                 }
                 catch (Exception)
                 {

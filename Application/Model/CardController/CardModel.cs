@@ -1,4 +1,5 @@
 ﻿using Application.Model.AccountController;
+using Application.Model.CommentController;
 
 namespace Application.Model.CardController
 {
@@ -9,5 +10,6 @@ namespace Application.Model.CardController
         public string Desc { get; set; }
         public int Index { get; set; }
         public List<AccountSimpleModel> AssingedUsers { get; set; }
+        public List<CommentModel> Comments { get; set;}
     }
 }
